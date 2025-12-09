@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EXTINMAIS - Sistema de Inspeção</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+</head>
+
+<body><!-- Login Screen -->
+  <div id="loginScreen" class="login-container">
+    <div class="login-box">
+      <div class="logo-container">
+        <div class="logo-placeholder" id="loginLogo"><img src="" alt="Logo EXTINMAIS" id="loginLogoImg"
+            style="display: none;">
+          <div class="logo-placeholder-text" id="loginLogoText">
+            EXTINMAIS
+          </div>
+        </div>
+        <div class="logo-title">
+          EXTINMAIS
+        </div>
+      </div>
+      <form id="loginForm">
+        <div class="form-group"><label for="loginUsername">Usuário</label> <input type="text" id="loginUsername"
+            required>
+        </div>
+        <div class="form-group"><label for="loginPassword">Senha</label> <input type="password" id="loginPassword"
+            required>
+        </div><button type="submit" class="btn"> <i class="fas fa-sign-in-alt"></i> Entrar </button>
+      </form>
+    </div>
+  </div><!-- Main App -->
+  <div id="appContainer" class="app-container"><!-- Desktop Sidebar -->
+    <aside class="sidebar-desktop" id="sidebarDesktop" style="display: none;">
+      <div class="sidebar-header">
+        <div class="sidebar-logo" id="sidebarLogo"><img src="" alt="Logo EXTINMAIS" id="sidebarLogoImg"
+            style="display: none;">
+          <div class="sidebar-logo-text" id="sidebarLogoText">
+            EXTINMAIS
+          </div>
+        </div>
+        <div class="sidebar-title">
+          EXTINMAIS
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-item-desktop active" data-section="overview"><i class="fas fa-th-large"></i> <span>Visão
+            Geral</span>
+        </div>
+        <div class="nav-item-desktop" data-section="companies"><i class="fas fa-building"></i> <span>Empresas</span>
+        </div>
+        <div class="nav-item-desktop" data-section="inspections"><i class="fas fa-clipboard-check"></i>
+          <span>Inspeções</span>
+        </div>
+        <div class="nav-item-desktop" data-section="orders">
+          <i class="fas fa-tools"></i> <span>Ordens de Serviço</span>
+        </div>
+
+        <div class="nav-item-desktop" data-section="config"><i class="fas fa-cog"></i> <span>Configurações</span>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info-desktop">
+          <div class="user-avatar-desktop" id="userAvatarDesktop">
+            A
+          </div>
+          <div class="user-details-desktop">
+            <div class="user-name-desktop" id="userNameDesktop">
+              Admin
+            </div>
+            <div class="user-role-desktop" id="userRoleDesktop">
+              Administrador
+            </div>
+          </div>
+        </div><button class="btn btn-secondary" id="logoutBtnDesktop"> <i class="fas fa-sign-out-alt"></i> Sair
+        </button>
+      </div>
+    </aside><!-- Main Content -->
+    <main class="main-content"><!-- Overview Section -->
+      <section id="overviewSection" class="content-section active">
+        <div class="page-header">
+          <h1 class="page-title">Visão Geral</h1>
+          <p class="page-subtitle">Dashboard de estatísticas</p>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-building"></i>
+            </div>
+            <div class="stat-value" id="totalCompanies">
+              0
+            </div>
+            <div class="stat-label">
+              Empresas Cadastradas
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-clipboard-check"></i>
+            </div>
+            <div class="stat-value" id="totalInspections">
+              0
+            </div>
+            <div class="stat-label">
+              Inspeções Realizadas
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-value" id="pendingInspections">
+              0
+            </div>
+            <div class="stat-label">
+              Inspeções Pendentes
+            </div>
+          </div>
+        </div>
+      </section><!-- Companies Section -->
+      <section id="companiesSection" class="content-section">
+        <div class="page-header">
+          <h1 class="page-title">Empresas</h1>
+          <p class="page-subtitle">Gerenciar empresas cadastradas</p>
+        </div>
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;"><button class="btn"
+            id="addCompanyBtn"> <i class="fas fa-plus"></i> Nova Empresa </button> <button class="btn btn-info"
+            id="manualInspectionBtn"> <i class="fas fa-clipboard-list"></i> Inspeção Manual </button>
+        </div>
+        <div id="companiesList"></div>
+      </section><!-- Inspections Section -->
+      <section id="inspectionsSection" class="content-section">
+        <div class="page-header">
+          <h1 class="page-title">Inspeções</h1>
+          <p class="page-subtitle">Histórico de inspeções</p>
+        </div>
+        <div class="search-bar">
+          <div class="search-box"><i class="fas fa-search"></i> <input type="text" id="inspectionSearch"
+              placeholder="Buscar inspeções...">
+          </div>
+        </div>
+        <div class="filter-buttons"><button class="filter-btn active" data-filter="all">Todas</button> <button
+            class="filter-btn" data-filter="completed">Concluídas</button> <button class="filter-btn"
+            data-filter="pending">Pendentes</button>
+        </div>
+        <div id="inspectionsList"></div>
+      </section>
+      <section id="ordersSection" class="content-section">
+
+        <div class="page-header">
+          <h1 class="page-title">
+            <i class="fas fa-file-invoice"></i> Ordens de Serviço
+          </h1>
+          <p class="page-subtitle">Gerenciamento de ordens de serviço</p>
+        </div>
+
+        <!-- Botão Nova OS -->
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+          <button class="btn" onclick="openModal('orderModal')">
+            <i class="fas fa-plus"></i> Nova OS
+          </button>
+        </div>
+
+        <!-- Busca -->
+        <div class="search-bar">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="orderSearch" placeholder="Buscar OS...">
+          </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filter-buttons">
+          <button class="filter-btn active" data-filter="all">Todas</button>
+          <button class="filter-btn" data-filter="completed">Concluídas</button>
+          <button class="filter-btn" data-filter="pending">Pendentes</button>
+        </div>
+
+        <!-- Lista -->
+        <div id="ordersList"></div>
+
+      </section>
+
+
+      <!-- Config Section -->
+      <section id="configSection" class="content-section">
+        <div class="page-header">
+          <h1 class="page-title">Configurações</h1>
+          <p class="page-subtitle">Perfil e configurações</p>
+        </div><!-- User Info Mobile -->
+        <div class="user-info-mobile">
+          <div class="user-avatar-mobile" id="userAvatarMobile">
+            A
+          </div>
+          <div class="user-details-mobile">
+            <div class="user-name-mobile" id="userNameMobile">
+              Admin
+            </div>
+            <div class="user-role-mobile" id="userRoleMobile">
+              Administrador
+            </div>
+          </div>
+        </div><!-- Settings Grid -->
+        <div class="settings-grid"><!-- Logo Upload -->
+          <div class="settings-card-compact">
+            <h3><i class="fas fa-image"></i> Logo</h3>
+            <div class="logo-preview-compact" id="logoPreview"><img src="" alt="Logo Preview" id="logoPreviewImg"
+                style="display: none;">
+              <div class="logo-preview-text" id="logoPreviewText">
+                EXTINMAIS
+              </div>
+            </div>
+            <div class="upload-area-compact" onclick="document.getElementById('logoFile').click()"><i
+                class="fas fa-cloud-upload-alt"></i>
+              <p>Upload</p><input type="file" id="logoFile" accept="image/*">
+            </div><button class="btn-small btn-danger" id="removeLogo"
+              style="display: none; width: 100%; margin-top: 8px;"> <i class="fas fa-trash"></i> Remover </button>
+          </div><!-- Profile -->
+          <div class="settings-card-compact">
+            <h3><i class="fas fa-user-circle"></i> Perfil</h3>
+            <form id="profileForm">
+              <div class="form-group"><label>Nome</label> <input type="text" id="profileName" required>
+              </div>
+              <div class="form-group"><label>CNPJ</label> <input type="text" id="profileCNPJ" required
+                  style="background: #0a0a0a;">
+              </div>
+              <div class="form-group"><label>Usuário</label> <input type="text" id="profileUsername" readonly
+                  style="background: #0a0a0a;">
+              </div><button type="submit" class="btn-small btn-success" style="width: 100%;"> <i
+                  class="fas fa-save"></i> Salvar </button>
+            </form>
+          </div><!-- Password -->
+          <div class="settings-card-compact">
+            <h3><i class="fas fa-key"></i> Senha</h3>
+            <form id="passwordForm">
+              <div class="form-group"><label>Senha Atual</label> <input type="password" name="current_password"
+                  required>
+              </div>
+              <div class="form-group"><label>Nova Senha</label> <input type="password" name="new_password" required>
+              </div>
+              <div class="form-group"><label>Confirmar</label> <input type="password" name="confirm_password" required>
+              </div><button type="submit" class="btn-small btn-primary" style="width: 100%;"> <i
+                  class="fas fa-lock"></i> Alterar </button>
+            </form>
+          </div><!-- Backup -->
+          <div class="settings-card-compact">
+            <h3><i class="fas fa-archive"></i> Backup</h3>
+            <p style="color: #999; font-size: 13px; margin-bottom: 15px;">Arquive ou restaure seus dados</p><button
+              class="btn-small btn-warning" id="archiveMonthBtn" style="width: 100%; margin-bottom: 10px;"> <i
+                class="fas fa-download"></i> Arquivar Mês </button>
+            <div class="upload-area-compact" onclick="document.getElementById('restoreFile').click()"><i
+                class="fas fa-upload"></i>
+              <p>Restaurar Backup</p><input type="file" id="restoreFile" accept=".json">
+            </div>
+          </div>
+        </div><!-- Logout Mobile --> <button class="btn btn-secondary" id="logoutBtnMobile" style="margin-top: 20px;">
+          <i class="fas fa-sign-out-alt"></i> Sair </button>
+      </section><!-- PDF Preview Section -->
+      <section id="pdfPreviewSection" class="content-section">
+        <div class="page-header">
+          <h1 class="page-title">Visualização do Relatório</h1>
+          <p class="page-subtitle">Pré-visualização antes de salvar</p>
+        </div>
+        <div style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;"><button
+            class="btn-small btn-secondary" id="backToFormBtn"> <i class="fas fa-arrow-left"></i> Voltar </button>
+          <button class="btn-small btn-primary" id="downloadPdfBtn"> <i class="fas fa-download"></i> Baixar PDF
+          </button> <button class="btn-small btn-success" id="saveInspectionBtn"> <i class="fas fa-save"></i> Salvar
+          </button>
+        </div>
+        <div id="pdfPreview"></div>
+      </section>
+    </main><!-- Bottom Navigation - Mobile -->
+    <nav class="bottom-nav">
+      <div class="nav-item-mobile active" data-section="overview"><i class="fas fa-th-large"></i> <span>Início</span>
+      </div>
+      <div class="nav-item-mobile" data-section="companies"><i class="fas fa-building"></i> <span>Empresas</span>
+      </div>
+      <div class="nav-item-mobile" data-section="inspections"><i class="fas fa-clipboard-check"></i>
+        <span>Inspeções</span>
+      </div>
+      <div class="nav-item-mobile" data-section="orders">
+        <i class="fas fa-tools"></i> <span>OS</span>
+      </div>
+
+      <div class="nav-item-mobile" data-section="config"><i class="fas fa-cog"></i> <span>Config</span>
+      </div>
+    </nav>
+  </div><!-- Add Company Modal -->
+  <div id="addCompanyModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Nova Empresa</h3><button class="close-modal" onclick="closeModal('addCompanyModal')"> <i
+            class="fas fa-times"></i> </button>
+      </div>
+      <form id="addCompanyForm">
+        <div class="form-group"><label>Razão Social</label> <input type="text" name="razao_social" required>
+        </div>
+        <div class="form-group"><label>CNPJ</label> <input type="text" name="cnpj" required>
+        </div>
+        <div class="form-group"><label>Telefone</label> <input type="tel" name="telefone">
+        </div>
+        <div class="form-group"><label>Endereço</label> <input type="text" name="endereco">
+        </div>
+        <div class="form-group"><label>Responsável</label> <input type="text" name="responsavel">
+        </div><button type="submit" class="btn"> <i class="fas fa-save"></i> Cadastrar Empresa </button>
+      </form>
+    </div>
+  </div><!-- PDF Selection Modal -->
+  <div id="pdfSelectionModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Selecione o Relatório</h3><button class="close-modal"
+          onclick="closeModal('pdfSelectionModal')"> <i class="fas fa-times"></i> </button>
+      </div>
+      <p style="color: #999; margin-bottom: 15px;">Escolha qual relatório deseja gerar:</p>
+      <div class="pdf-selection-grid" id="pdfSelectionGrid"></div>
+    </div>
+  </div><!-- Inspection Form Modal -->
+  <div id="inspectionFormModal" class="modal">
+    <div class="modal-content inspection-modal">
+      <div class="inspection-modal-header modal-header">
+        <h3 class="modal-title">Nova Inspeção</h3><button class="close-modal"
+          onclick="closeModal('inspectionFormModal')"> <i class="fas fa-times"></i> </button>
+      </div>
+      <div class="inspection-tabs">
+        <div class="inspection-tab active" data-section="cliente">
+          Cliente
+        </div>
+        <div class="inspection-tab" data-section="certificado">
+          Certificado
+        </div>
+        <div class="inspection-tab" data-section="bombas">
+          Bombas
+        </div>
+        <div class="inspection-tab" data-section="hidrantes">
+          Hidrantes
+        </div>
+        <div class="inspection-tab" data-section="alarme">
+          Alarme
+        </div>
+        <div class="inspection-tab" data-section="extintores">
+          Extintores
+        </div>
+        <div class="inspection-tab" data-section="sinalizacao">
+          Sinalização
+        </div>
+        <div class="inspection-tab" data-section="conformidade">
+          Conformidade
+        </div>
+      </div>
+      <div class="inspection-content">
+        <form id="inspectionForm"><!-- Cliente Section -->
+          <div class="inspection-section active" id="section-cliente">
+            <h3>Dados do Cliente</h3>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Razão Social</label>
+                <input type="text" name="razao_social" id="inspecaoRazao" required>
+              </div>
+
+              <div class="form-group">
+                <label>CNPJ</label>
+                <input type="text" name="cnpj" id="inspecaoCnpj" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Telefone</label>
+                <input type="tel" name="telefone" id="inspecaoTelefone">
+              </div>
+
+              <div class="form-group">
+                <label>Responsável</label>
+                <input type="text" name="responsavel" id="inspecaoResponsavel">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Endereço</label>
+              <input type="text" name="endereco" id="inspecaoEndereco">
+            </div>
+          </div>
+          <!-- Certificado Section -->
+          <div class="inspection-section" id="section-certificado">
+            <h3>Certificado AVCB/CLCB</h3>
+            <div class="form-row">
+              <div class="form-group"><label>Tipo de Certificado</label> <select name="cert_tipo">
+                  <option value="">Selecione</option>
+                  <option value="AVCB">AVCB</option>
+                  <option value="CLCB">CLCB</option>
+                </select>
+              </div>
+              <div class="form-group"><label>Número</label> <input type="text" name="cert_numero">
+              </div>
+            </div>
+            <div class="form-group"><label>Validade</label> <input type="date" name="cert_validade">
+            </div>
+          </div><!-- Bombas Section -->
+          <div class="inspection-section" id="section-bombas">
+            <h3>Sistema de Bombas</h3>
+            <div class="checkbox-group"><input type="checkbox" id="hasBombas" name="has_bombas"> <label
+                for="hasBombas">Possui Sistema de Bombas?</label>
+            </div>
+            <div id="bombasSection" class="conditional-section">
+              <h4>Reservatório Técnico</h4>
+              <div class="form-group"><label>Tamanho (Litros)</label> <input type="number" name="reservatorio_tamanho">
+              </div>
+              <h4>Bomba Principal</h4>
+              <div class="form-row">
+                <div class="form-group"><label>Potência</label> <input type="text" name="bomba_principal_potencia">
+                </div>
+                <div class="form-group"><label>Teste de Partida</label> <select name="bomba_principal_teste">
+                    <option value="">Selecione</option>
+                    <option value="Sim">Sim</option>
+                    <option value="Não">Não</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group"><label>Estado Geral</label> <select name="bomba_principal_estado">
+                  <option value="">Selecione</option>
+                  <option value="Bom">Bom</option>
+                  <option value="Regular">Regular</option>
+                  <option value="Ruim">Ruim</option>
+                </select>
+              </div>
+              <div class="checkbox-group" style="margin-top: 15px;"><input type="checkbox" id="hasBombaJockey"
+                  name="has_bomba_jockey"> <label for="hasBombaJockey">Possui Bomba Jockey?</label>
+              </div>
+              <div id="bombaJockeySection" class="conditional-section">
+                <div class="form-row">
+                  <div class="form-group"><label>Potência</label> <input type="text" name="jockey_potencia">
+                  </div>
+                  <div class="form-group"><label>Partida Automática</label> <select name="jockey_partida">
+                      <option value="">Selecione</option>
+                      <option value="Sim">Sim</option>
+                      <option value="Não">Não</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label>Pressostato Ajustado</label> <select name="jockey_pressostato">
+                      <option value="">Selecione</option>
+                      <option value="Sim">Sim</option>
+                      <option value="Não">Não</option>
+                    </select>
+                  </div>
+                  <div class="form-group"><label>Sem Ruídos</label> <select name="jockey_ruidos">
+                      <option value="">Selecione</option>
+                      <option value="Sim">Sim</option>
+                      <option value="Não">Não</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div><!-- Hidrantes Section -->
+          <div class="inspection-section" id="section-hidrantes">
+            <h3>Rede de Hidrantes</h3>
+            <div class="checkbox-group"><input type="checkbox" id="hasHidrantes" name="has_hidrantes"> <label
+                for="hasHidrantes">Possui Rede de Hidrantes?</label>
+            </div>
+            <div id="hidrantesSection" class="conditional-section">
+              <div class="form-row">
+                <div class="form-group"><label>Diâmetro da Tubulação</label> <input type="text"
+                    name="hidrantes_diametro">
+                </div>
+                <div class="form-group"><label>Quantidade de Pontos</label> <input type="number"
+                    name="hidrantes_quantidade">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Suportes Firmes</label> <select name="hidrantes_suportes">
+                    <option value="">Selecione</option>
+                    <option value="Sim">Sim</option>
+                    <option value="Não">Não</option>
+                  </select>
+                </div>
+                <div class="form-group"><label>Sem Vazamentos</label> <select name="hidrantes_vazamentos">
+                    <option value="">Selecione</option>
+                    <option value="Sim">Sim</option>
+                    <option value="Não">Não</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group"><label>Identificação Conforme Norma</label> <select
+                  name="hidrantes_identificacao">
+                  <option value="">Selecione</option>
+                  <option value="Sim">Sim</option>
+                  <option value="Não">Não</option>
+                </select>
+              </div>
+              <h4>Acessórios</h4>
+              <div class="form-row">
+                <div class="form-group"><label>Adaptador Storz</label> <select name="adaptador_storz">
+                    <option value="">Selecione</option>
+                    <option value="1½&quot;">1½"</option>
+                    <option value="2½&quot;">2½"</option>
+                  </select>
+                </div>
+                <div class="form-group"><label>Material do Adaptador</label> <select name="adaptador_material">
+                    <option value="">Selecione</option>
+                    <option value="Latão">Latão</option>
+                    <option value="Alumínio">Alumínio</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Esguicho</label> <select name="esguicho_tipo">
+                    <option value="">Selecione</option>
+                    <option value="Regulável (neblina/jato sólido)">Regulável (neblina/jato sólido)</option>
+                    <option value="Fixo (jato pleno)">Fixo (jato pleno)</option>
+                  </select>
+                </div>
+                <div class="form-group"><label>Material do Esguicho</label> <select name="esguicho_material">
+                    <option value="">Selecione</option>
+                    <option value="Alumínio">Alumínio</option>
+                    <option value="Latão">Latão</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Chave Storz</label> <select name="chave_storz">
+                    <option value="">Selecione</option>
+                    <option value="Sim">Sim</option>
+                    <option value="Não">Não</option>
+                  </select>
+                </div>
+                <div class="form-group"><label>Material da Chave</label> <select name="chave_material">
+                    <option value="">Selecione</option>
+                    <option value="Aço">Aço</option>
+                    <option value="Alumínio">Alumínio</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Tipo de Mangueira</label> <select name="mangueira_tipo">
+                    <option value="">Selecione</option>
+                    <option value="Tipo 1 (Predial)">Tipo 1 (Predial)</option>
+                    <option value="Tipo 2 (Industrial Leve)">Tipo 2 (Industrial Leve)</option>
+                    <option value="Tipo 3 (Industrial Pesado)">Tipo 3 (Industrial Pesado)</option>
+                  </select>
+                </div>
+                <div class="form-group"><label>Diâmetro da Mangueira</label> <select name="mangueira_diametro">
+                    <option value="">Selecione</option>
+                    <option value="1½&quot; (38mm)">1½" (38mm)</option>
+                    <option value="2½&quot; (63mm)">2½" (63mm)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group"><label>Comprimento da Mangueira (metros)</label> <input type="number"
+                  name="mangueira_comprimento">
+              </div>
+            </div>
+          </div><!-- Alarme Section -->
+          <div class="inspection-section" id="section-alarme">
+            <h3>Sistema de Alarme</h3>
+            <div class="checkbox-group"><input type="checkbox" id="hasAlarme" name="has_alarme"> <label
+                for="hasAlarme">Possui Sistema de Alarme?</label>
+            </div>
+            <div id="alarmeSection" class="conditional-section">
+              <div class="form-row">
+                <div class="form-group"><label>Quantidade de Pontos</label> <input type="number" name="alarme_pontos">
+                </div>
+                <div class="form-group"><label>Tipo de Central</label> <select name="alarme_central_tipo">
+                    <option value="">Selecione</option>
+                    <option value="Convencional">Convencional</option>
+                    <option value="Endereçável">Endereçável</option>
+                  </select>
+                </div>
+              </div>
+              <h4>Verificações da Central</h4>
+              <div class="checkbox-group"><input type="checkbox" name="central_liga"> <label>Central liga
+                  normalmente</label>
+              </div>
+              <div class="checkbox-group"><input type="checkbox" name="central_sem_falhas"> <label>Sem indicações de
+                  falhas</label>
+              </div>
+              <div class="checkbox-group"><input type="checkbox" name="central_baterias_testadas"> <label>Baterias
+                  testadas</label>
+              </div>
+              <div class="checkbox-group"><input type="checkbox" name="central_comunicacao_ok"> <label>Comunicação com
+                  dispositivos OK</label>
+              </div>
+              <h4>Baterias</h4>
+              <div class="form-row">
+                <div class="form-group"><label>Quantidade</label> <input type="number" name="baterias_quantidade">
+                </div>
+                <div class="form-group"><label>Voltagem</label> <input type="text" name="baterias_voltagem">
+                </div>
+              </div>
+              <div class="form-group"><label>Amperagem</label> <input type="text" name="baterias_amperagem">
+              </div>
+              <h4>Detectores</h4>
+              <div class="form-row">
+                <div class="form-group"><label>Quantidade</label> <input type="number" name="detectores_quantidade">
+                </div>
+                <div class="form-group"><label>Apresentam Falha?</label> <select name="detectores_falha">
+                    <option value="">Selecione</option>
+                    <option value="Sim">Sim</option>
+                    <option value="Não">Não</option>
+                  </select>
+                </div>
+              </div>
+              <h4>Sirenes</h4>
+              <div class="checkbox-group"><input type="checkbox" name="sirenes_instalacao"> <label>Instalação
+                  correta</label>
+              </div>
+              <div class="checkbox-group"><input type="checkbox" name="sirenes_acionamento"> <label>Acionamento
+                  testado</label>
+              </div>
+              <div class="checkbox-group"><input type="checkbox" name="sirenes_volume"> <label>Volume sonoro
+                  adequado</label>
+              </div>
+            </div>
+          </div><!-- Extintores Section -->
+          <div class="inspection-section" id="section-extintores">
+            <h3>Extintores de Incêndio</h3>
+            <div class="checkbox-group"><input type="checkbox" id="hasExtintores" name="has_extintores"> <label
+                for="hasExtintores">Possui Extintores?</label>
+            </div>
+            <div id="extintoresSection" class="conditional-section">
+              <div class="form-row">
+                <div class="form-group"><label>Quantidade</label> <input type="number" name="extintores_quantidade">
+                </div>
+                <div class="form-group"><label>Tipo</label> <input type="text" name="extintores_tipo"
+                    placeholder="Ex: CO2, PQS">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Peso</label> <input type="text" name="extintores_peso">
+                </div>
+                <div class="form-group"><label>Validade</label> <input type="date" name="extintores_validade">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Lacres Intactos</label> <select name="extintores_lacres">
+                    <option value="">Selecione</option>
+                    <option value="Sim">Sim</option>
+                    <option value="Não">Não</option>
+                  </select>
+                </div>
+                <div class="form-group"><label>Manômetro na Faixa Verde</label> <select name="extintores_manometro">
+                    <option value="">Selecione</option>
+                    <option value="Sim">Sim</option>
+                    <option value="Não">Não</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group"><label>Fixação Adequada</label> <select name="extintores_fixacao">
+                  <option value="">Selecione</option>
+                  <option value="Sim">Sim</option>
+                  <option value="Não">Não</option>
+                </select>
+              </div>
+            </div>
+          </div><!-- Sinalização Section -->
+          <div class="inspection-section" id="section-sinalizacao">
+            <h3>Sinalização</h3>
+            <div class="checkbox-group"><input type="checkbox" id="hasSinalizacao" name="has_sinalizacao"> <label
+                for="hasSinalizacao">Possui Sinalização?</label>
+            </div>
+            <div id="sinalizacaoSection" class="conditional-section">
+              <div class="form-group"><label>Placas Fotoluminescentes</label> <select name="placas_fotoluminescentes">
+                  <option value="">Selecione</option>
+                  <option value="Sim">Sim</option>
+                  <option value="Não">Não</option>
+                </select>
+              </div>
+              <h4>Sinalização de Hidrantes</h4>
+              <div class="form-group"><label>Quantidade de Placas "Hidrante"</label> <input type="number"
+                  name="sinal_hidrante" value="0">
+              </div>
+              <h4>Sinalização de Rota de Fuga</h4>
+              <div class="form-row">
+                <div class="form-group"><label>Saída</label> <input type="number" name="sinal_saida" value="0">
+                </div>
+                <div class="form-group"><label>Caminhamento Direita</label> <input type="number"
+                    name="sinal_cam_direita" value="0">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Caminhamento Esquerda</label> <input type="number"
+                    name="sinal_cam_esquerda" value="0">
+                </div>
+                <div class="form-group"><label>Escada Subida Direita</label> <input type="number"
+                    name="sinal_esc_up_direita" value="0">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Escada Subida Esquerda</label> <input type="number"
+                    name="sinal_esc_up_esquerda" value="0">
+                </div>
+                <div class="form-group"><label>Escada Descida Direita</label> <input type="number"
+                    name="sinal_esc_down_direita" value="0">
+                </div>
+              </div>
+              <div class="form-group"><label>Escada Descida Esquerda</label> <input type="number"
+                  name="sinal_esc_down_esquerda" value="0">
+              </div>
+              <h4>Sinalização de Acionadores</h4>
+              <div class="form-row">
+                <div class="form-group"><label>Acionamento de Bomba</label> <input type="number"
+                    name="sinal_acion_bomba" value="0">
+                </div>
+                <div class="form-group"><label>Acionamento de Alarme</label> <input type="number"
+                    name="sinal_acion_alarme" value="0">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Central de Alarme</label> <input type="number"
+                    name="sinal_central_alarme" value="0">
+                </div>
+                <div class="form-group"><label>Bomba de Incêndio</label> <input type="number"
+                    name="sinal_bomba_incendio" value="0">
+                </div>
+              </div>
+              <h4>Placas Específicas</h4>
+              <div class="form-row">
+                <div class="form-group"><label>Placa de Lotação (Nº Pessoas)</label> <input type="number"
+                    name="placa_lotacao" value="0">
+                </div>
+                <div class="form-group"><label>Placa M1</label> <input type="number" name="placa_m1" value="0">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Extintor</label> <input type="number" name="placa_extintor" value="0">
+                </div>
+                <div class="form-group"><label>Iluminação de Emergência</label> <input type="number"
+                    name="placa_ilum_emerg" value="0">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Sinalização de Emergência</label> <input type="number"
+                    name="placa_sinal_emerg" value="0">
+                </div>
+                <div class="form-group"><label>Alarme de Incêndio</label> <input type="number" name="placa_alarme"
+                    value="0">
+                </div>
+              </div>
+              <div class="form-group"><label>Hidrante</label> <input type="number" name="placa_hidrante_espec"
+                  value="0">
+              </div>
+            </div>
+          </div><!-- Conformidade Section -->
+          <div class="inspection-section" id="section-conformidade">
+            <h3>Conformidade Geral</h3>
+            <div class="checkbox-group"><input type="checkbox" name="conf_rotas_desobstruidas"> <label>Rotas
+                desobstruídas</label>
+            </div>
+            <div class="checkbox-group"><input type="checkbox" name="conf_equipamentos_acessiveis"> <label>Equipamentos
+                acessíveis</label>
+            </div>
+            <div class="checkbox-group"><input type="checkbox" name="conf_limpeza"> <label>Organização e limpeza</label>
+            </div>
+            <div class="checkbox-group"><input type="checkbox" name="conf_projeto_aprovado"> <label>Conforme projeto
+                aprovado</label>
+            </div>
+            <div class="form-group" style="margin-top: 15px;"><label>Número do Projeto Aprovado</label> <input
+                type="text" name="numero_projeto">
+            </div>
+            <div style="margin-top: 25px; display: flex; gap: 10px; flex-direction: column;"><button type="button"
+                class="btn btn-warning" id="generateReportBtn"> <i class="fas fa-file-pdf"></i> Gerar Relatórios
+              </button>
+              <button type="button" class="btn btn-success" id="finishInspectionBtn"> <i
+                  class="fas fa-check-circle"></i> Finalizar Inspeção </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal" id="orderModal">
+    <div class="modal-content" style="max-height:none; height:auto; overflow:visible;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-file-invoice"></i> Nova Ordem de Serviço</h3><button
+          class="close-modal" onclick="closeModal('orderModal')"> <i class="fas fa-times"></i> </button>
+      </div>
+      <form id="orderForm">
+        <div class="form-row" style="grid-template-columns: 1fr 1fr;">
+          <div class="form-group"><label>Cliente</label> <input type="text" name="cliente" required>
+          </div>
+          <div class="form-group"><label>CNPJ</label> <input type="text" name="cnpj" required>
+          </div>
+        </div>
+        <div class="form-group"><label>Endereço</label> <input type="text" name="endereco" required>
+        </div>
+        <div class="form-row" style="grid-template-columns: 1fr 1fr;">
+          <div class="form-group"><label>Serviço</label> <input type="text" name="servico" required>
+          </div>
+          <div class="form-group"><label>Técnico</label><input type="text" name="tecnico" id="tecnicoInput" required>
+
+          </div>
+        </div>
+        <div class="form-row" style="grid-template-columns: 1fr 1fr;">
+          <div class="form-group"><label>Preço (R$)</label> <input type="number" name="preco" step="0.01" min="0"
+              required>
+          </div>
+          <div class="form-group"><label>Status</label> <select name="status" required>
+              <option value="Pendente">Pendente</option>
+              <option value="Concluída">Concluída</option>
+            </select>
+          </div>
+        </div><button type="submit" class="btn btn-success" style="width: 100%;"> <i class="fas fa-save"></i> Salvar OS
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast"></div>
+  <script src="script.js"></script>
+</body>
+
+</html>
