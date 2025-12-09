@@ -481,19 +481,28 @@ function generateCompletePDF(data) {
 
 
         // -------------------------------------
-        // Página 6 - Sinalização (já vem dividida automaticamente pela função)
+        // Página 6 - Sinalização PARTE 1
         // -------------------------------------
         if (data.has_sinalizacao) {
             html += `<div class="pdf-page">`;
             html += generatePDFHeader('RELATÓRIO COMPLETO DE INSPEÇÃO');
-            html += generateSinalizacaoSection(data);
+            html += generateSinalizacaoSection_Parte1(data);
+            html += generatePDFFooter();
+            html += `</div>`;
+
+            // -------------------------------------
+            // Página 7 - Sinalização PARTE 2
+            // -------------------------------------
+            html += `<div class="pdf-page">`;
+            html += generatePDFHeader('RELATÓRIO COMPLETO DE INSPEÇÃO');
+            html += generateSinalizacaoSection_Parte2(data);
             html += generatePDFFooter();
             html += `</div>`;
         }
 
 
         // -------------------------------------
-        // Página 7 - Conformidade + Assinatura
+        // Página 8 - Conformidade + Assinatura
         // -------------------------------------
         html += `<div class="pdf-page">`;
         html += generatePDFHeader('RELATÓRIO COMPLETO DE INSPEÇÃO');
@@ -592,7 +601,100 @@ function generateCompletePDF(data) {
     return html;
 }
 
+// PARTE 1 - Rota de Fuga
+function generateSinalizacaoSection_Parte1(data) {
+    let html = `
+        <div class="pdf-section">
+          <div class="pdf-section-title">
+            <i class="fas fa-sign"></i> Sinalização - Parte 1
+          </div>
+          <div class="pdf-field">
+            <div class="pdf-field-label">Placas Fotoluminescentes:</div>
+            <div class="pdf-field-value">${data.placas_fotoluminescentes === 'Sim' ? '<span class="checkmark">✓</span>' : '<span class="crossmark">✗</span>'}</div>
+          </div>
+      `;
 
+    // Rota de Fuga - só mostra se tiver quantidade
+    if (data.sinal_saida && parseInt(data.sinal_saida) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Saída:</div><div class="pdf-field-value">${data.sinal_saida}</div></div>`;
+    }
+    if (data.sinal_cam_direita && parseInt(data.sinal_cam_direita) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Caminhamento → Direita:</div><div class="pdf-field-value">${data.sinal_cam_direita}</div></div>`;
+    }
+    if (data.sinal_cam_esquerda && parseInt(data.sinal_cam_esquerda) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Caminhamento → Esquerda:</div><div class="pdf-field-value">${data.sinal_cam_esquerda}</div></div>`;
+    }
+    if (data.sinal_esc_up_direita && parseInt(data.sinal_esc_up_direita) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Escada ↑ Direita:</div><div class="pdf-field-value">${data.sinal_esc_up_direita}</div></div>`;
+    }
+    if (data.sinal_esc_up_esquerda && parseInt(data.sinal_esc_up_esquerda) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Escada ↑ Esquerda:</div><div class="pdf-field-value">${data.sinal_esc_up_esquerda}</div></div>`;
+    }
+    if (data.sinal_esc_down_direita && parseInt(data.sinal_esc_down_direita) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Escada ↓ Direita:</div><div class="pdf-field-value">${data.sinal_esc_down_direita}</div></div>`;
+    }
+    if (data.sinal_esc_down_esquerda && parseInt(data.sinal_esc_down_esquerda) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Escada ↓ Esquerda:</div><div class="pdf-field-value">${data.sinal_esc_down_esquerda}</div></div>`;
+    }
+
+    html += `</div>`;
+    return html;
+}
+
+// PARTE 2 - Hidrantes, Acionadores e Placas Específicas
+function generateSinalizacaoSection_Parte2(data) {
+    let html = `
+        <div class="pdf-section">
+          <div class="pdf-section-title">
+            <i class="fas fa-sign"></i> Sinalização - Parte 2
+          </div>
+      `;
+
+    // Sinalização de Hidrantes
+    if (data.sinal_hidrante && parseInt(data.sinal_hidrante) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Hidrante:</div><div class="pdf-field-value">${data.sinal_hidrante}</div></div>`;
+    }
+
+    // Sinalização de Acionadores
+    if (data.sinal_acion_bomba && parseInt(data.sinal_acion_bomba) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Acionamento de Bomba:</div><div class="pdf-field-value">${data.sinal_acion_bomba}</div></div>`;
+    }
+    if (data.sinal_acion_alarme && parseInt(data.sinal_acion_alarme) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Acionamento de Alarme:</div><div class="pdf-field-value">${data.sinal_acion_alarme}</div></div>`;
+    }
+    if (data.sinal_central_alarme && parseInt(data.sinal_central_alarme) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Central de Alarme:</div><div class="pdf-field-value">${data.sinal_central_alarme}</div></div>`;
+    }
+    if (data.sinal_bomba_incendio && parseInt(data.sinal_bomba_incendio) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Bomba de Incêndio:</div><div class="pdf-field-value">${data.sinal_bomba_incendio}</div></div>`;
+    }
+
+    // Placas Específicas
+    if (data.placa_lotacao && parseInt(data.placa_lotacao) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Placa de Lotação (Nº Pessoas):</div><div class="pdf-field-value">${data.placa_lotacao}</div></div>`;
+    }
+    if (data.placa_m1 && parseInt(data.placa_m1) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Placa M1:</div><div class="pdf-field-value">${data.placa_m1}</div></div>`;
+    }
+    if (data.placa_extintor && parseInt(data.placa_extintor) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Extintor:</div><div class="pdf-field-value">${data.placa_extintor}</div></div>`;
+    }
+    if (data.placa_ilum_emerg && parseInt(data.placa_ilum_emerg) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Iluminação de Emergência:</div><div class="pdf-field-value">${data.placa_ilum_emerg}</div></div>`;
+    }
+    if (data.placa_sinal_emerg && parseInt(data.placa_sinal_emerg) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Sinalização de Emergência:</div><div class="pdf-field-value">${data.placa_sinal_emerg}</div></div>`;
+    }
+    if (data.placa_alarme && parseInt(data.placa_alarme) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Alarme de Incêndio:</div><div class="pdf-field-value">${data.placa_alarme}</div></div>`;
+    }
+    if (data.placa_hidrante_espec && parseInt(data.placa_hidrante_espec) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Hidrante:</div><div class="pdf-field-value">${data.placa_hidrante_espec}</div></div>`;
+    }
+
+    html += `</div>`;
+    return html;
+}
 
 // 2. PDF BOMBAS
 function generateBombasPDF(data) {
@@ -906,185 +1008,90 @@ function generateExtintoresSection(data) {
       `;
 }
 
+
+// Função para DESKTOP - Sinalização completa em uma página
 function generateSinalizacaoSection(data) {
-    const isMobile = window.innerWidth <= 768;
-    
-    if (isMobile) {
-        // MOBILE: Divide em duas partes
-        let html = '';
-        
-        // PARTE 1 - Rota de Fuga
-        html += `
-            <div class="pdf-section">
-              <div class="pdf-section-title">
-                <i class="fas fa-sign"></i> Sinalização - Parte 1
-              </div>
-              <div class="pdf-field">
-                <div class="pdf-field-label">Placas Fotoluminescentes:</div>
-                <div class="pdf-field-value">${data.placas_fotoluminescentes === 'Sim' ? '<span class="checkmark">✓</span>' : '<span class="crossmark">✗</span>'}</div>
-              </div>
-        `;
+    let html = `
+        <div class="pdf-section">
+          <div class="pdf-section-title">
+            <i class="fas fa-sign"></i> Sinalização
+          </div>
+          <div class="pdf-field">
+            <div class="pdf-field-label">Placas Fotoluminescentes:</div>
+            <div class="pdf-field-value">${data.placas_fotoluminescentes === 'Sim' ? '<span class="checkmark">✓</span>' : '<span class="crossmark">✗</span>'}</div>
+          </div>
+      `;
 
-        // Rota de Fuga
-        if (data.sinal_saida && parseInt(data.sinal_saida) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Saída:</div><div class="pdf-field-value">${data.sinal_saida}</div></div>`;
-        }
-        if (data.sinal_cam_direita && parseInt(data.sinal_cam_direita) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Caminhamento → Direita:</div><div class="pdf-field-value">${data.sinal_cam_direita}</div></div>`;
-        }
-        if (data.sinal_cam_esquerda && parseInt(data.sinal_cam_esquerda) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Caminhamento → Esquerda:</div><div class="pdf-field-value">${data.sinal_cam_esquerda}</div></div>`;
-        }
-        if (data.sinal_esc_up_direita && parseInt(data.sinal_esc_up_direita) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Escada ↑ Direita:</div><div class="pdf-field-value">${data.sinal_esc_up_direita}</div></div>`;
-        }
-        if (data.sinal_esc_up_esquerda && parseInt(data.sinal_esc_up_esquerda) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Escada ↑ Esquerda:</div><div class="pdf-field-value">${data.sinal_esc_up_esquerda}</div></div>`;
-        }
-        if (data.sinal_esc_down_direita && parseInt(data.sinal_esc_down_direita) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Escada ↓ Direita:</div><div class="pdf-field-value">${data.sinal_esc_down_direita}</div></div>`;
-        }
-        if (data.sinal_esc_down_esquerda && parseInt(data.sinal_esc_down_esquerda) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Escada ↓ Esquerda:</div><div class="pdf-field-value">${data.sinal_esc_down_esquerda}</div></div>`;
-        }
-
-        html += `</div>`;
-
-        // PARTE 2 - Hidrantes, Acionadores e Placas
-        html += `
-            <div class="pdf-section">
-              <div class="pdf-section-title">
-                <i class="fas fa-sign"></i> Sinalização - Parte 2
-              </div>
-        `;
-
-        // Sinalização de Hidrantes
-        if (data.sinal_hidrante && parseInt(data.sinal_hidrante) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Hidrante:</div><div class="pdf-field-value">${data.sinal_hidrante}</div></div>`;
-        }
-
-        // Sinalização de Acionadores
-        if (data.sinal_acion_bomba && parseInt(data.sinal_acion_bomba) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Acionamento de Bomba:</div><div class="pdf-field-value">${data.sinal_acion_bomba}</div></div>`;
-        }
-        if (data.sinal_acion_alarme && parseInt(data.sinal_acion_alarme) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Acionamento de Alarme:</div><div class="pdf-field-value">${data.sinal_acion_alarme}</div></div>`;
-        }
-        if (data.sinal_central_alarme && parseInt(data.sinal_central_alarme) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Central de Alarme:</div><div class="pdf-field-value">${data.sinal_central_alarme}</div></div>`;
-        }
-        if (data.sinal_bomba_incendio && parseInt(data.sinal_bomba_incendio) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Bomba de Incêndio:</div><div class="pdf-field-value">${data.sinal_bomba_incendio}</div></div>`;
-        }
-
-        // Placas Específicas
-        if (data.placa_lotacao && parseInt(data.placa_lotacao) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Placa de Lotação (Nº Pessoas):</div><div class="pdf-field-value">${data.placa_lotacao}</div></div>`;
-        }
-        if (data.placa_m1 && parseInt(data.placa_m1) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Placa M1:</div><div class="pdf-field-value">${data.placa_m1}</div></div>`;
-        }
-        if (data.placa_extintor && parseInt(data.placa_extintor) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Extintor:</div><div class="pdf-field-value">${data.placa_extintor}</div></div>`;
-        }
-        if (data.placa_ilum_emerg && parseInt(data.placa_ilum_emerg) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Iluminação de Emergência:</div><div class="pdf-field-value">${data.placa_ilum_emerg}</div></div>`;
-        }
-        if (data.placa_sinal_emerg && parseInt(data.placa_sinal_emerg) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Sinalização de Emergência:</div><div class="pdf-field-value">${data.placa_sinal_emerg}</div></div>`;
-        }
-        if (data.placa_alarme && parseInt(data.placa_alarme) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Alarme de Incêndio:</div><div class="pdf-field-value">${data.placa_alarme}</div></div>`;
-        }
-        if (data.placa_hidrante_espec && parseInt(data.placa_hidrante_espec) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Hidrante:</div><div class="pdf-field-value">${data.placa_hidrante_espec}</div></div>`;
-        }
-
-        html += `</div>`;
-        return html;
-        
-    } else {
-        // DESKTOP: Mantém tudo junto
-        let html = `
-            <div class="pdf-section">
-              <div class="pdf-section-title">
-                <i class="fas fa-sign"></i> Sinalização
-              </div>
-              <div class="pdf-field">
-                <div class="pdf-field-label">Placas Fotoluminescentes:</div>
-                <div class="pdf-field-value">${data.placas_fotoluminescentes === 'Sim' ? '<span class="checkmark">✓</span>' : '<span class="crossmark">✗</span>'}</div>
-              </div>
-        `;
-
-        // Rota de Fuga
-        if (data.sinal_saida && parseInt(data.sinal_saida) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Saída:</div><div class="pdf-field-value">${data.sinal_saida}</div></div>`;
-        }
-        if (data.sinal_cam_direita && parseInt(data.sinal_cam_direita) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Caminhamento → Direita:</div><div class="pdf-field-value">${data.sinal_cam_direita}</div></div>`;
-        }
-        if (data.sinal_cam_esquerda && parseInt(data.sinal_cam_esquerda) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Caminhamento → Esquerda:</div><div class="pdf-field-value">${data.sinal_cam_esquerda}</div></div>`;
-        }
-        if (data.sinal_esc_up_direita && parseInt(data.sinal_esc_up_direita) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Escada ↑ Direita:</div><div class="pdf-field-value">${data.sinal_esc_up_direita}</div></div>`;
-        }
-        if (data.sinal_esc_up_esquerda && parseInt(data.sinal_esc_up_esquerda) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Escada ↑ Esquerda:</div><div class="pdf-field-value">${data.sinal_esc_up_esquerda}</div></div>`;
-        }
-        if (data.sinal_esc_down_direita && parseInt(data.sinal_esc_down_direita) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Escada ↓ Direita:</div><div class="pdf-field-value">${data.sinal_esc_down_direita}</div></div>`;
-        }
-        if (data.sinal_esc_down_esquerda && parseInt(data.sinal_esc_down_esquerda) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Escada ↓ Esquerda:</div><div class="pdf-field-value">${data.sinal_esc_down_esquerda}</div></div>`;
-        }
-
-        // Sinalização de Hidrantes
-        if (data.sinal_hidrante && parseInt(data.sinal_hidrante) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Hidrante:</div><div class="pdf-field-value">${data.sinal_hidrante}</div></div>`;
-        }
-
-        // Sinalização de Acionadores
-        if (data.sinal_acion_bomba && parseInt(data.sinal_acion_bomba) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Acionamento de Bomba:</div><div class="pdf-field-value">${data.sinal_acion_bomba}</div></div>`;
-        }
-        if (data.sinal_acion_alarme && parseInt(data.sinal_acion_alarme) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Acionamento de Alarme:</div><div class="pdf-field-value">${data.sinal_acion_alarme}</div></div>`;
-        }
-        if (data.sinal_central_alarme && parseInt(data.sinal_central_alarme) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Central de Alarme:</div><div class="pdf-field-value">${data.sinal_central_alarme}</div></div>`;
-        }
-        if (data.sinal_bomba_incendio && parseInt(data.sinal_bomba_incendio) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Bomba de Incêndio:</div><div class="pdf-field-value">${data.sinal_bomba_incendio}</div></div>`;
-        }
-
-        // Placas Específicas
-        if (data.placa_lotacao && parseInt(data.placa_lotacao) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Placa de Lotação (Nº Pessoas):</div><div class="pdf-field-value">${data.placa_lotacao}</div></div>`;
-        }
-        if (data.placa_m1 && parseInt(data.placa_m1) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Placa M1:</div><div class="pdf-field-value">${data.placa_m1}</div></div>`;
-        }
-        if (data.placa_extintor && parseInt(data.placa_extintor) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Extintor:</div><div class="pdf-field-value">${data.placa_extintor}</div></div>`;
-        }
-        if (data.placa_ilum_emerg && parseInt(data.placa_ilum_emerg) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Iluminação de Emergência:</div><div class="pdf-field-value">${data.placa_ilum_emerg}</div></div>`;
-        }
-        if (data.placa_sinal_emerg && parseInt(data.placa_sinal_emerg) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Sinalização de Emergência:</div><div class="pdf-field-value">${data.placa_sinal_emerg}</div></div>`;
-        }
-        if (data.placa_alarme && parseInt(data.placa_alarme) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Alarme de Incêndio:</div><div class="pdf-field-value">${data.placa_alarme}</div></div>`;
-        }
-        if (data.placa_hidrante_espec && parseInt(data.placa_hidrante_espec) > 0) {
-            html += `<div class="pdf-field"><div class="pdf-field-label">Hidrante:</div><div class="pdf-field-value">${data.placa_hidrante_espec}</div></div>`;
-        }
-
-        html += `</div>`;
-        return html;
+    // Rota de Fuga
+    if (data.sinal_saida && parseInt(data.sinal_saida) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Saída:</div><div class="pdf-field-value">${data.sinal_saida}</div></div>`;
     }
+    if (data.sinal_cam_direita && parseInt(data.sinal_cam_direita) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Caminhamento → Direita:</div><div class="pdf-field-value">${data.sinal_cam_direita}</div></div>`;
+    }
+    if (data.sinal_cam_esquerda && parseInt(data.sinal_cam_esquerda) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Caminhamento → Esquerda:</div><div class="pdf-field-value">${data.sinal_cam_esquerda}</div></div>`;
+    }
+    if (data.sinal_esc_up_direita && parseInt(data.sinal_esc_up_direita) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Escada ↑ Direita:</div><div class="pdf-field-value">${data.sinal_esc_up_direita}</div></div>`;
+    }
+    if (data.sinal_esc_up_esquerda && parseInt(data.sinal_esc_up_esquerda) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Escada ↑ Esquerda:</div><div class="pdf-field-value">${data.sinal_esc_up_esquerda}</div></div>`;
+    }
+    if (data.sinal_esc_down_direita && parseInt(data.sinal_esc_down_direita) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Escada ↓ Direita:</div><div class="pdf-field-value">${data.sinal_esc_down_direita}</div></div>`;
+    }
+    if (data.sinal_esc_down_esquerda && parseInt(data.sinal_esc_down_esquerda) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Escada ↓ Esquerda:</div><div class="pdf-field-value">${data.sinal_esc_down_esquerda}</div></div>`;
+    }
+
+    // Sinalização de Hidrantes
+    if (data.sinal_hidrante && parseInt(data.sinal_hidrante) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Hidrante:</div><div class="pdf-field-value">${data.sinal_hidrante}</div></div>`;
+    }
+
+    // Sinalização de Acionadores
+    if (data.sinal_acion_bomba && parseInt(data.sinal_acion_bomba) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Acionamento de Bomba:</div><div class="pdf-field-value">${data.sinal_acion_bomba}</div></div>`;
+    }
+    if (data.sinal_acion_alarme && parseInt(data.sinal_acion_alarme) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Acionamento de Alarme:</div><div class="pdf-field-value">${data.sinal_acion_alarme}</div></div>`;
+    }
+    if (data.sinal_central_alarme && parseInt(data.sinal_central_alarme) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Central de Alarme:</div><div class="pdf-field-value">${data.sinal_central_alarme}</div></div>`;
+    }
+    if (data.sinal_bomba_incendio && parseInt(data.sinal_bomba_incendio) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Bomba de Incêndio:</div><div class="pdf-field-value">${data.sinal_bomba_incendio}</div></div>`;
+    }
+
+    // Placas Específicas
+    if (data.placa_lotacao && parseInt(data.placa_lotacao) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Placa de Lotação (Nº Pessoas):</div><div class="pdf-field-value">${data.placa_lotacao}</div></div>`;
+    }
+    if (data.placa_m1 && parseInt(data.placa_m1) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Placa M1:</div><div class="pdf-field-value">${data.placa_m1}</div></div>`;
+    }
+    if (data.placa_extintor && parseInt(data.placa_extintor) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Extintor:</div><div class="pdf-field-value">${data.placa_extintor}</div></div>`;
+    }
+    if (data.placa_ilum_emerg && parseInt(data.placa_ilum_emerg) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Iluminação de Emergência:</div><div class="pdf-field-value">${data.placa_ilum_emerg}</div></div>`;
+    }
+    if (data.placa_sinal_emerg && parseInt(data.placa_sinal_emerg) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Sinalização de Emergência:</div><div class="pdf-field-value">${data.placa_sinal_emerg}</div></div>`;
+    }
+    if (data.placa_alarme && parseInt(data.placa_alarme) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Alarme de Incêndio:</div><div class="pdf-field-value">${data.placa_alarme}</div></div>`;
+    }
+    if (data.placa_hidrante_espec && parseInt(data.placa_hidrante_espec) > 0) {
+        html += `<div class="pdf-field"><div class="pdf-field-label">Hidrante:</div><div class="pdf-field-value">${data.placa_hidrante_espec}</div></div>`;
+    }
+
+    html += `</div>`;
+    return html;
 }
+
+
 
 
 
