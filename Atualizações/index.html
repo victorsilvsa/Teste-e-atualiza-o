@@ -153,41 +153,85 @@
         </div>
         <div id="inspectionsList"></div>
       </section>
-      <section id="ordersSection" class="content-section">
+  <section id="ordersSection" class="content-section">
 
-        <div class="page-header">
-          <h1 class="page-title">
-            <i class="fas fa-file-invoice"></i> Ordens de Serviço
-          </h1>
-          <p class="page-subtitle">Gerenciamento de ordens de serviço</p>
-        </div>
+  <div class="page-header">
+    <h1 class="page-title">
+      <i class="fas fa-file-invoice"></i> Ordens de Serviço
+    </h1>
+    <p class="page-subtitle">Gerenciamento de ordens de serviço</p>
+  </div>
 
-        <!-- Botão Nova OS -->
-        <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
-          <button class="btn" onclick="openModal('orderModal')">
-            <i class="fas fa-plus"></i> Nova OS
-          </button>
-        </div>
+  <!-- Sub Abas -->
+  <div class="orders-tabs">
+    <button class="orders-tab active" data-tab="orders">
+      <i class="fas fa-file-invoice"></i> Ordens
+    </button>
+    <button class="orders-tab" data-tab="products">
+      <i class="fas fa-box"></i> Produtos
+    </button>
+  </div>
 
-        <!-- Busca -->
-        <div class="search-bar">
-          <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" id="orderSearch" placeholder="Buscar OS...">
-          </div>
-        </div>
+  <!-- ===================== -->
+  <!-- Sub Aba: ORDENS -->
+  <!-- ===================== -->
+  <div class="orders-tab-content active" id="orders-tab-orders">
 
-        <!-- Filtros -->
-        <div class="filter-buttons">
-          <button class="filter-btn active" data-filter="all">Todas</button>
-          <button class="filter-btn" data-filter="completed">Concluídas</button>
-          <button class="filter-btn" data-filter="pending">Pendentes</button>
-        </div>
+    <!-- Botão Nova OS -->
+    <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+      <button class="btn" onclick="openModal('orderModal')">
+        <i class="fas fa-plus"></i> Nova OS
+      </button>
+    </div>
 
-        <!-- Lista -->
-        <div id="ordersList"></div>
+    <!-- Busca -->
+    <div class="search-bar">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="orderSearch" placeholder="Buscar OS...">
+      </div>
+    </div>
 
-      </section>
+    <!-- Filtros -->
+    <div class="filter-buttons">
+      <button class="filter-btn active" data-filter="all">Todas</button>
+      <button class="filter-btn" data-filter="completed">Concluídas</button>
+      <button class="filter-btn" data-filter="pending">Pendentes</button>
+    </div>
+
+    <!-- Lista de Ordens -->
+    <div id="ordersList"></div>
+
+  </div>
+
+  <!-- ===================== -->
+  <!-- Sub Aba: PRODUTOS -->
+  <!-- ===================== -->
+  <div class="orders-tab-content" id="orders-tab-products">
+
+    <!-- Botão Novo Produto -->
+    <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+   <button class="btn" onclick="openProductModal()">
+  <i class="fas fa-plus"></i> Novo Produto
+</button>
+
+    </div>
+
+    <!-- Busca -->
+    <div class="search-bar">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="productSearch" placeholder="Buscar produto...">
+      </div>
+    </div>
+
+    <!-- Lista de Produtos -->
+    <div id="productsList"></div>
+
+  </div>
+
+</section>
+
 
 
       <!-- Config Section -->
@@ -624,46 +668,85 @@
             </div>
           </div><!-- Extintores Section -->
           <div class="inspection-section" id="section-extintores">
-            <h3>Extintores de Incêndio</h3>
-            <div class="checkbox-group"><input type="checkbox" id="hasExtintores" name="has_extintores"> <label
-                for="hasExtintores">Possui Extintores?</label>
-            </div>
-            <div id="extintoresSection" class="conditional-section">
-              <div class="form-row">
-                <div class="form-group"><label>Quantidade</label> <input type="number" name="extintores_quantidade">
-                </div>
-                <div class="form-group"><label>Tipo</label> <input type="text" name="extintores_tipo"
-                    placeholder="Ex: CO2, PQS">
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group"><label>Peso</label> <input type="text" name="extintores_peso">
-                </div>
-                <div class="form-group"><label>Validade</label> <input type="date" name="extintores_validade">
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group"><label>Lacres Intactos</label> <select name="extintores_lacres">
-                    <option value="">Selecione</option>
-                    <option value="Sim">Sim</option>
-                    <option value="Não">Não</option>
-                  </select>
-                </div>
-                <div class="form-group"><label>Manômetro na Faixa Verde</label> <select name="extintores_manometro">
-                    <option value="">Selecione</option>
-                    <option value="Sim">Sim</option>
-                    <option value="Não">Não</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-group"><label>Fixação Adequada</label> <select name="extintores_fixacao">
-                  <option value="">Selecione</option>
-                  <option value="Sim">Sim</option>
-                  <option value="Não">Não</option>
-                </select>
-              </div>
-            </div>
-          </div><!-- Sinalização Section -->
+  <h3>Extintores de Incêndio</h3>
+
+  <div class="checkbox-group">
+    <input type="checkbox" id="hasExtintores" name="has_extintores">
+    <label for="hasExtintores">Possui Extintores?</label>
+  </div>
+
+  <div id="extintoresSection" class="conditional-section">
+
+    <!-- EXTINTOR -->
+    <div class="extintor-item" data-index="0">
+
+      <div class="extintor-header">
+        <i class="fas fa-fire-extinguisher"></i>
+        <span>Extintor </span>
+      </div>
+
+      <div class="form-row two-cols">
+        <div class="form-group">
+          <label>Tipo</label>
+          <input type="text" name="extintores_tipo_0" placeholder="Ex: CO2, PQS">
+        </div>
+
+        <div class="form-group">
+          <label>Quantidade</label>
+          <input type="number" name="extintores_quantidade_0">
+        </div>
+      </div>
+
+      <div class="form-row two-cols">
+        <div class="form-group">
+          <label>Peso</label>
+          <input type="text" name="extintores_peso_0">
+        </div>
+
+        <div class="form-group">
+          <label>Validade</label>
+          <input type="date" name="extintores_validade_0">
+        </div>
+      </div>
+
+      <div class="form-row two-cols">
+        <div class="form-group">
+          <label>Lacres Intactos</label>
+          <select name="extintores_lacres_0">
+            <option value="">Selecione</option>
+            <option value="Sim">Sim</option>
+            <option value="Não">Não</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Manômetro OK</label>
+          <select name="extintores_manometro_0">
+            <option value="">Selecione</option>
+            <option value="Sim">Sim</option>
+            <option value="Não">Não</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Fixação Adequada</label>
+        <select name="extintores_fixacao_0">
+          <option value="">Selecione</option>
+          <option value="Sim">Sim</option>
+          <option value="Não">Não</option>
+        </select>
+      </div>
+
+    </div>
+
+    <button type="button" class="btn btn-outline" id="addExtintorBtn">
+      <i class="fas fa-plus"></i> Adicionar outro tipo
+    </button>
+
+  </div>
+</div>
+<!-- Sinalização Section -->
           <div class="inspection-section" id="section-sinalizacao">
             <h3>Sinalização</h3>
             <div class="checkbox-group"><input type="checkbox" id="hasSinalizacao" name="has_sinalizacao"> <label
@@ -779,44 +862,223 @@
       </div>
     </div>
   </div>
+<div class="modal" id="orderModal">
+  <div
+    class="modal-content"
+    style="
+      max-height:90vh;
+      width:100%;
+      max-width:720px;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    "
+  >
 
-
-  <div class="modal" id="orderModal">
-    <div class="modal-content" style="max-height:none; height:auto; overflow:visible;">
-      <div class="modal-header">
-        <h3 class="modal-title"><i class="fas fa-file-invoice"></i> Nova Ordem de Serviço</h3><button
-          class="close-modal" onclick="closeModal('orderModal')"> <i class="fas fa-times"></i> </button>
-      </div>
-      <form id="orderForm">
-        <div class="form-row" style="grid-template-columns: 1fr 1fr;">
-          <div class="form-group"><label>Cliente</label> <input type="text" name="cliente" required>
-          </div>
-          <div class="form-group"><label>CNPJ</label> <input type="text" name="cnpj" required>
-          </div>
-        </div>
-        <div class="form-group"><label>Endereço</label> <input type="text" name="endereco" required>
-        </div>
-        <div class="form-row" style="grid-template-columns: 1fr 1fr;">
-          <div class="form-group"><label>Serviço</label> <input type="text" name="servico" required>
-          </div>
-          <div class="form-group"><label>Técnico</label><input type="text" name="tecnico" id="tecnicoInput" required>
-
-          </div>
-        </div>
-        <div class="form-row" style="grid-template-columns: 1fr 1fr;">
-          <div class="form-group"><label>Preço (R$)</label> <input type="number" name="preco" step="0.01" min="0"
-              required>
-          </div>
-          <div class="form-group"><label>Status</label> <select name="status" required>
-              <option value="Pendente">Pendente</option>
-              <option value="Concluída">Concluída</option>
-            </select>
-          </div>
-        </div><button type="submit" class="btn btn-success" style="width: 100%;"> <i class="fas fa-save"></i> Salvar OS
-        </button>
-      </form>
+    <!-- HEADER -->
+    <div class="modal-header">
+      <h3 class="modal-title">
+        <i class="fas fa-file-invoice"></i> Nova Ordem de Serviço
+      </h3>
+      <button class="close-modal" onclick="closeModal('orderModal')">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
+
+    <!-- FORM -->
+    <form
+      id="orderForm"
+      style="
+        flex:1;
+        overflow-y:auto;
+        padding-right:6px;
+      "
+    >
+
+      <!-- ===================== -->
+      <!-- DADOS DA OS -->
+      <!-- ===================== -->
+
+      <div class="form-row" style="grid-template-columns:1fr 1fr;">
+        <div class="form-group">
+          <label>Cliente</label>
+          <input type="text" name="cliente" required>
+        </div>
+
+        <div class="form-group">
+          <label>CNPJ</label>
+          <input type="text" name="cnpj" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Endereço</label>
+        <input type="text" name="endereco" required>
+      </div>
+
+      <div class="form-row" style="grid-template-columns:1fr 1fr;">
+        <div class="form-group">
+          <label>Serviço</label>
+          <input type="text" name="servico" required>
+        </div>
+
+        <div class="form-group">
+          <label>Técnico</label>
+          <input type="text" name="tecnico" id="tecnicoInput" required>
+        </div>
+      </div>
+
+      <div class="form-row" style="grid-template-columns:1fr;">
+        <div class="form-group">
+          <label>Status</label>
+          <select name="status" required>
+            <option value="Pendente">Pendente</option>
+            <option value="Concluída">Concluída</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ===================== -->
+      <!-- PRODUTOS -->
+      <!-- ===================== -->
+
+      <hr style="margin:20px 0; border-color:#333;">
+
+      <h4 style="margin-bottom:10px;">
+        <i class="fas fa-box"></i> Produtos da Ordem
+      </h4>
+
+      <div class="form-row" style="grid-template-columns:2fr 1fr 1fr;">
+        <div class="form-group">
+          <label>Produto</label>
+          <select id="osProductSelect">
+            <option value="">Selecione um produto</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Qtd</label>
+          <input type="number" id="osProductQty" value="1" min="1">
+        </div>
+
+        <div class="form-group" style="display:flex; align-items:flex-end;">
+          <button
+            type="button"
+            class="btn"
+            id="addProductToOSBtn"
+            style="width:100%;"
+          >
+            <i class="fas fa-plus"></i> Adicionar
+          </button>
+        </div>
+      </div>
+
+      <!-- LISTA FIXA -->
+      <div
+        id="osProductsList"
+        style="
+          max-height:160px;
+          overflow-y:auto;
+          margin:15px 0;
+          padding:8px;
+          background:#1b1b1b;
+          border:1px solid #333;
+          border-radius:6px;
+        "
+      >
+        <p style="color:#777;">Nenhum produto adicionado.</p>
+      </div>
+
+      <!-- LUCRO -->
+      <div class="form-row" style="grid-template-columns:1fr;">
+        <div class="form-group">
+          <label>Lucro sobre produtos (%)</label>
+          <input type="number" id="profitPercent" placeholder="Ex: 20">
+        </div>
+      </div>
+
+      <!-- TOTAIS -->
+      <div
+        style="
+          background:#1f1f1f;
+          border:1px solid #333;
+          border-radius:8px;
+          padding:12px;
+          margin-bottom:20px;
+        "
+      >
+        <p style="margin:4px 0; color:#ccc;">
+          Subtotal Produtos:
+          <strong id="productsSubtotal">R$ 0,00</strong>
+        </p>
+        <p style="margin:4px 0; color:#ccc;">
+          Lucro:
+          <strong id="productsProfitValue">R$ 0,00</strong>
+        </p>
+        <p style="margin:4px 0; color:#fff;">
+          Total Final:
+          <strong id="productsTotalWithProfit">R$ 0,00</strong>
+        </p>
+      </div>
+
+      <!-- SALVAR -->
+      <button
+        type="submit"
+        class="btn btn-success"
+        style="width:100%; margin-bottom:10px;"
+      >
+        <i class="fas fa-save"></i> Salvar OS
+      </button>
+
+    </form>
   </div>
+</div>
+
+
+
+<!-- Modal Produto -->
+<div id="productModal" class="modal-overlay">
+
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2><i class="fas fa-box"></i> Novo Produto</h2>
+      <button class="modal-close" onclick="closeProductModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="form-group">
+        <label>Nome do Produto</label>
+        <input type="text" id="productName" placeholder="Ex: Extintor ABC 6kg">
+      </div>
+
+      <div class="form-group">
+        <label>Descrição</label>
+        <textarea id="productDescription" placeholder="Descrição do produto"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Preço (R$)</label>
+        <input type="number" id="productPrice" placeholder="0,00">
+      </div>
+
+  
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeProductModal()">
+        Cancelar
+      </button>
+      <button class="btn" onclick="saveProduct()">
+        <i class="fas fa-save"></i> Salvar Produto
+      </button>
+    </div>
+
+  </div>
+</div>
 
   <!-- Toast Notification -->
   <div id="toast" class="toast"></div>
