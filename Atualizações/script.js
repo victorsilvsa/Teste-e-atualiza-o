@@ -408,33 +408,254 @@ document.getElementById('hasSinalizacao').addEventListener('change', (e) => {
 // PDF GENERATORS - Um para cada tipo de inspeção
 
 // 1. PDF COMPLETO
+function generateExtintoresSection(data) {
+  const extintores = [];
+
+  Object.keys(data).forEach(key => {
+    const match = key.match(/^extintores_tipo_(\d+)$/);
+    if (!match) return;
+
+    const i = match[1];
+
+    extintores.push({
+      tipo: data[`extintores_tipo_${i}`],
+      quantidade: data[`extintores_quantidade_${i}`] ?? data.extintores_quantidade ?? '-',
+      peso: data[`extintores_peso_${i}`] ?? data.extintores_peso ?? '-',
+      validade: data[`extintores_validade_${i}`] ?? data.extintores_validade,
+      lacres: data[`extintores_lacres_${i}`],
+      manometro: data[`extintores_manometro_${i}`],
+      fixacao: data[`extintores_fixacao_${i}`]
+    });
+  });
+
+  if (extintores.length === 0 && data.extintores_tipo) {
+    extintores.push({
+      tipo: data.extintores_tipo,
+      quantidade: data.extintores_quantidade,
+      peso: data.extintores_peso,
+      validade: data.extintores_validade,
+      lacres: data.extintores_lacres,
+      manometro: data.extintores_manometro,
+      fixacao: data.extintores_fixacao
+    });
+  }
+
+  if (extintores.length === 0) {
+    return `
+      <div class="pdf-section">
+        <div class="pdf-section-title">
+          <i class="fas fa-fire-extinguisher"></i> Extintores de Incêndio
+        </div>
+        <div class="pdf-field-value">Nenhum extintor informado</div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="pdf-section">
+      <div class="pdf-section-title">
+        <i class="fas fa-fire-extinguisher"></i> Extintores de Incêndio
+      </div>
+
+      <div class="pdf-extintores-grid">
+        ${extintores.map((ext, index) => `
+          <div class="pdf-extintor-card">
+            <div class="pdf-extintor-title">
+              Extintor ${index + 1} — ${ext.tipo || '-'}
+            </div>
+
+            <div class="pdf-field">
+              <div class="pdf-field-label">Quantidade:</div>
+              <div class="pdf-field-value">${ext.quantidade || '-'}</div>
+            </div>
+
+            <div class="pdf-field">
+              <div class="pdf-field-label">Peso:</div>
+              <div class="pdf-field-value">${ext.peso || '-'}</div>
+            </div>
+
+            <div class="pdf-field">
+              <div class="pdf-field-label">Validade:</div>
+              <div class="pdf-field-value">
+                ${ext.validade && !isNaN(new Date(ext.validade))
+                  ? new Date(ext.validade).toLocaleDateString('pt-BR')
+                  : '-'}
+              </div>
+            </div>
+
+            <div class="pdf-field">
+              <div class="pdf-field-label">Lacres Intactos:</div>
+              <div class="pdf-field-value">
+                ${ext.lacres === 'Sim'
+                  ? '<span class="checkmark">✓</span>'
+                  : '<span class="crossmark">✗</span>'}
+              </div>
+            </div>
+
+            <div class="pdf-field">
+              <div class="pdf-field-label">Manômetro OK:</div>
+              <div class="pdf-field-value">
+                ${ext.manometro === 'Sim'
+                  ? '<span class="checkmark">✓</span>'
+                  : '<span class="crossmark">✗</span>'}
+              </div>
+            </div>
+
+            <div class="pdf-field">
+              <div class="pdf-field-label">Fixação Adequada:</div>
+              <div class="pdf-field-value">
+                ${ext.fixacao === 'Sim'
+                  ? '<span class="checkmark">✓</span>'
+                  : '<span class="crossmark">✗</span>'}
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function generateExtintoresSection_Mobile(data, extintorIndex) {
+  const extintores = [];
+
+  Object.keys(data).forEach(key => {
+    const match = key.match(/^extintores_tipo_(\d+)$/);
+    if (!match) return;
+
+    const i = match[1];
+
+    extintores.push({
+      tipo: data[`extintores_tipo_${i}`],
+      quantidade: data[`extintores_quantidade_${i}`] ?? data.extintores_quantidade ?? '-',
+      peso: data[`extintores_peso_${i}`] ?? data.extintores_peso ?? '-',
+      validade: data[`extintores_validade_${i}`] ?? data.extintores_validade,
+      lacres: data[`extintores_lacres_${i}`],
+      manometro: data[`extintores_manometro_${i}`],
+      fixacao: data[`extintores_fixacao_${i}`]
+    });
+  });
+
+  if (extintores.length === 0 && data.extintores_tipo) {
+    extintores.push({
+      tipo: data.extintores_tipo,
+      quantidade: data.extintores_quantidade,
+      peso: data.extintores_peso,
+      validade: data.extintores_validade,
+      lacres: data.extintores_lacres,
+      manometro: data.extintores_manometro,
+      fixacao: data.extintores_fixacao
+    });
+  }
+
+  if (extintores.length === 0 || extintorIndex >= extintores.length) {
+    return `
+      <div class="pdf-section">
+        <div class="pdf-section-title">
+          <i class="fas fa-fire-extinguisher"></i> Extintores de Incêndio
+        </div>
+        <div class="pdf-field-value">Nenhum extintor informado</div>
+      </div>
+    `;
+  }
+
+  const ext = extintores[extintorIndex];
+  const totalExtintores = extintores.length;
+
+  return `
+    <div class="pdf-section">
+      <div class="pdf-section-title">
+        <i class="fas fa-fire-extinguisher"></i> Extintores de Incêndio (${extintorIndex + 1}/${totalExtintores})
+      </div>
+
+      <div class="pdf-extintores-grid">
+        <div class="pdf-extintor-card">
+          <div class="pdf-extintor-title">
+            Extintor ${extintorIndex + 1} — ${ext.tipo || '-'}
+          </div>
+
+          <div class="pdf-field">
+            <div class="pdf-field-label">Quantidade:</div>
+            <div class="pdf-field-value">${ext.quantidade || '-'}</div>
+          </div>
+
+          <div class="pdf-field">
+            <div class="pdf-field-label">Peso:</div>
+            <div class="pdf-field-value">${ext.peso || '-'}</div>
+          </div>
+
+          <div class="pdf-field">
+            <div class="pdf-field-label">Validade:</div>
+            <div class="pdf-field-value">
+              ${ext.validade && !isNaN(new Date(ext.validade))
+                ? new Date(ext.validade).toLocaleDateString('pt-BR')
+                : '-'}
+            </div>
+          </div>
+
+          <div class="pdf-field">
+            <div class="pdf-field-label">Lacres Intactos:</div>
+            <div class="pdf-field-value">
+              ${ext.lacres === 'Sim'
+                ? '<span class="checkmark">✓</span>'
+                : '<span class="crossmark">✗</span>'}
+            </div>
+          </div>
+
+          <div class="pdf-field">
+            <div class="pdf-field-label">Manômetro OK:</div>
+            <div class="pdf-field-value">
+              ${ext.manometro === 'Sim'
+                ? '<span class="checkmark">✓</span>'
+                : '<span class="crossmark">✗</span>'}
+            </div>
+          </div>
+
+          <div class="pdf-field">
+            <div class="pdf-field-label">Fixação Adequada:</div>
+            <div class="pdf-field-value">
+              ${ext.fixacao === 'Sim'
+                ? '<span class="checkmark">✓</span>'
+                : '<span class="crossmark">✗</span>'}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function countExtintores(data) {
+  let count = 0;
+
+  Object.keys(data).forEach(key => {
+    const match = key.match(/^extintores_tipo_(\d+)$/);
+    if (match) count++;
+  });
+
+  if (count === 0 && data.extintores_tipo) {
+    count = 1;
+  }
+
+  return count;
+}
+
 function generateCompletePDF(data) {
   const isMobile = window.innerWidth <= 768;
   let html = '';
 
   if (isMobile) {
-    // ============================================
-    // MODO MOBILE - UMA INSPEÇÃO POR PÁGINA
-    // ============================================
-
-    // -------------------------------------
     // Página 1 - Cliente e Certificado
-    // -------------------------------------
     html += `<div class="pdf-page">`;
     html += generatePDFHeader('RELATÓRIO COMPLETO DE INSPEÇÃO');
     html += generateClientSection(data);
-
     if (data.cert_tipo) {
       html += generateCertificateSection(data);
     }
-
     html += generatePDFFooter();
     html += `</div>`;
 
-
-    // -------------------------------------
-    // Página 2 - Bombas (se existir)
-    // -------------------------------------
+    // Página 2 - Bombas
     if (data.has_bombas) {
       html += `<div class="pdf-page">`;
       html += generatePDFHeader('RELATÓRIO COMPLETO DE INSPEÇÃO');
@@ -443,10 +664,7 @@ function generateCompletePDF(data) {
       html += `</div>`;
     }
 
-
-    // -------------------------------------
-    // Página 3 - Hidrantes (se existir)
-    // -------------------------------------
+    // Página 3 - Hidrantes
     if (data.has_hidrantes) {
       html += `<div class="pdf-page">`;
       html += generatePDFHeader('RELATÓRIO COMPLETO DE INSPEÇÃO');
@@ -455,10 +673,7 @@ function generateCompletePDF(data) {
       html += `</div>`;
     }
 
-
-    // -------------------------------------
-    // Página 4 - Alarme (se existir)
-    // -------------------------------------
+    // Página 4 - Alarme
     if (data.has_alarme) {
       html += `<div class="pdf-page">`;
       html += generatePDFHeader('RELATÓRIO COMPLETO DE INSPEÇÃO');
@@ -467,22 +682,19 @@ function generateCompletePDF(data) {
       html += `</div>`;
     }
 
-
-    // -------------------------------------
-    // Página 5 - Extintores (se existir)
-    // -------------------------------------
+    // Páginas de Extintores - Uma por extintor
     if (data.has_extintores) {
-      html += `<div class="pdf-page">`;
-      html += generatePDFHeader('RELATÓRIO COMPLETO DE INSPEÇÃO');
-      html += generateExtintoresSection(data);
-      html += generatePDFFooter();
-      html += `</div>`;
+      const totalExtintores = countExtintores(data);
+      for (let i = 0; i < totalExtintores; i++) {
+        html += `<div class="pdf-page">`;
+        html += generatePDFHeader('RELATÓRIO COMPLETO DE INSPEÇÃO');
+        html += generateExtintoresSection_Mobile(data, i);
+        html += generatePDFFooter();
+        html += `</div>`;
+      }
     }
 
-
-    // -------------------------------------
-    // Página 6 - Sinalização PARTE 1
-    // -------------------------------------
+    // Páginas de Sinalização - Parte 1 e 2
     if (data.has_sinalizacao) {
       html += `<div class="pdf-page">`;
       html += generatePDFHeader('RELATÓRIO COMPLETO DE INSPEÇÃO');
@@ -490,9 +702,6 @@ function generateCompletePDF(data) {
       html += generatePDFFooter();
       html += `</div>`;
 
-      // -------------------------------------
-      // Página 7 - Sinalização PARTE 2
-      // -------------------------------------
       html += `<div class="pdf-page">`;
       html += generatePDFHeader('RELATÓRIO COMPLETO DE INSPEÇÃO');
       html += generateSinalizacaoSection_Parte2(data);
@@ -500,10 +709,7 @@ function generateCompletePDF(data) {
       html += `</div>`;
     }
 
-
-    // -------------------------------------
-    // Página 8 - Conformidade + Assinatura
-    // -------------------------------------
+    // Última Página - Conformidade e Assinaturas
     html += `<div class="pdf-page">`;
     html += generatePDFHeader('RELATÓRIO COMPLETO DE INSPEÇÃO');
     html += generateConformidadeSection(data);
@@ -512,94 +718,69 @@ function generateCompletePDF(data) {
     html += `</div>`;
 
   } else {
-    // ============================================
-    // MODO DESKTOP - INSPEÇÕES AGRUPADAS
-    // ============================================
+    // MODO DESKTOP
 
-    // -------------------------------------
     // Página 1 - Cliente e Certificado
-    // -------------------------------------
     html += `<div class="pdf-page">`;
     html += generatePDFHeader('RELATÓRIO COMPLETO DE INSPEÇÃO');
     html += generateClientSection(data);
-
     if (data.cert_tipo) {
       html += generateCertificateSection(data);
     }
-
     html += generatePDFFooter();
     html += `</div>`;
 
-
-    // -------------------------------------
     // Página 2 - Bombas e Hidrantes
-    // -------------------------------------
     if (data.has_bombas || data.has_hidrantes) {
       html += `<div class="pdf-page">`;
       html += generatePDFHeader('RELATÓRIO COMPLETO DE INSPEÇÃO');
-
       if (data.has_bombas) {
         html += generateBombasSection(data);
       }
-
       if (data.has_hidrantes) {
         html += generateHidrantesSection(data);
       }
-
       html += generatePDFFooter();
       html += `</div>`;
     }
 
-
-    // -------------------------------------
     // Página 3 - Alarme e Extintores
-    // -------------------------------------
     if (data.has_alarme || data.has_extintores) {
       html += `<div class="pdf-page">`;
       html += generatePDFHeader('RELATÓRIO COMPLETO DE INSPEÇÃO');
-
       if (data.has_alarme) {
         html += generateAlarmeSection(data);
       }
-
       if (data.has_extintores) {
         html += generateExtintoresSection(data);
       }
-
       html += generatePDFFooter();
       html += `</div>`;
     }
 
-
-    // -------------------------------------
     // Página 4 - Sinalização
-    // -------------------------------------
     html += `<div class="pdf-page">`;
     html += generatePDFHeader('RELATÓRIO COMPLETO DE INSPEÇÃO');
-
     if (data.has_sinalizacao) {
       html += generateSinalizacaoSection(data);
     }
-
     html += generatePDFFooter();
     html += `</div>`;
 
-
-    // -------------------------------------
-    // Página 5 - Conformidade + Assinatura
-    // -------------------------------------
+    // Página 5 - Conformidade e Assinaturas
     html += `<div class="pdf-page">`;
     html += generatePDFHeader('RELATÓRIO COMPLETO DE INSPEÇÃO');
-
     html += generateConformidadeSection(data);
     html += generateSignaturesSection(data);
-
     html += generatePDFFooter();
     html += `</div>`;
   }
 
   return html;
 }
+
+
+
 
 // PARTE 1 - Rota de Fuga
 function generateSinalizacaoSection_Parte1(data) {
@@ -973,7 +1154,6 @@ function generateAlarmeSection(data) {
         </div>
       `;
 }
-
 function generateExtintoresSection(data) {
   const extintores = [];
 
@@ -1020,58 +1200,58 @@ function generateExtintoresSection(data) {
   }
 
   return `
-    <div class="pdf-section">
-      <div class="pdf-section-title">
+    <div class="pdf-section" style="margin-bottom: 8px;">
+      <div class="pdf-section-title" style="margin-bottom: 6px; font-size: 13px;">
         <i class="fas fa-fire-extinguisher"></i> Extintores de Incêndio
       </div>
 
-      <div class="pdf-extintores-grid">
+      <div class="pdf-extintores-grid" style="gap: 8px; margin-top: 6px;">
         ${extintores.map((ext, index) => `
-          <div class="pdf-extintor-card">
-            <div class="pdf-extintor-title">
+          <div class="pdf-extintor-card" style="padding: 6px; border-radius: 4px;">
+            <div class="pdf-extintor-title" style="margin-bottom: 3px; font-size: 11px;">
               Extintor ${index + 1} — ${ext.tipo || '-'}
             </div>
 
-            <div class="pdf-field">
-              <div class="pdf-field-label">Quantidade:</div>
-              <div class="pdf-field-value">${ext.quantidade || '-'}</div>
+            <div class="pdf-field" style="margin-bottom: 2px;">
+              <div class="pdf-field-label" style="font-size: 9px; margin-bottom: 1px;">Quantidade:</div>
+              <div class="pdf-field-value" style="font-size: 10px;">${ext.quantidade || '-'}</div>
             </div>
 
-            <div class="pdf-field">
-              <div class="pdf-field-label">Peso:</div>
-              <div class="pdf-field-value">${ext.peso || '-'}</div>
+            <div class="pdf-field" style="margin-bottom: 2px;">
+              <div class="pdf-field-label" style="font-size: 9px; margin-bottom: 1px;">Peso:</div>
+              <div class="pdf-field-value" style="font-size: 10px;">${ext.peso || '-'}</div>
             </div>
 
-            <div class="pdf-field">
-              <div class="pdf-field-label">Validade:</div>
-              <div class="pdf-field-value">
+            <div class="pdf-field" style="margin-bottom: 2px;">
+              <div class="pdf-field-label" style="font-size: 9px; margin-bottom: 1px;">Validade:</div>
+              <div class="pdf-field-value" style="font-size: 10px;">
                 ${ext.validade
                   ? new Date(ext.validade).toLocaleDateString('pt-BR')
                   : '-'}
               </div>
             </div>
 
-            <div class="pdf-field">
-              <div class="pdf-field-label">Lacres Intactos:</div>
-              <div class="pdf-field-value">
+            <div class="pdf-field" style="margin-bottom: 2px;">
+              <div class="pdf-field-label" style="font-size: 9px; margin-bottom: 1px;">Lacres Intactos:</div>
+              <div class="pdf-field-value" style="font-size: 10px;">
                 ${ext.lacres === 'Sim'
                   ? '<span class="checkmark">✓</span>'
                   : '<span class="crossmark">✗</span>'}
               </div>
             </div>
 
-            <div class="pdf-field">
-              <div class="pdf-field-label">Manômetro OK:</div>
-              <div class="pdf-field-value">
+            <div class="pdf-field" style="margin-bottom: 2px;">
+              <div class="pdf-field-label" style="font-size: 9px; margin-bottom: 1px;">Manômetro OK:</div>
+              <div class="pdf-field-value" style="font-size: 10px;">
                 ${ext.manometro === 'Sim'
                   ? '<span class="checkmark">✓</span>'
                   : '<span class="crossmark">✗</span>'}
               </div>
             </div>
 
-            <div class="pdf-field">
-              <div class="pdf-field-label">Fixação Adequada:</div>
-              <div class="pdf-field-value">
+            <div class="pdf-field" style="margin-bottom: 0;">
+              <div class="pdf-field-label" style="font-size: 9px; margin-bottom: 1px;">Fixação Adequada:</div>
+              <div class="pdf-field-value" style="font-size: 10px;">
                 ${ext.fixacao === 'Sim'
                   ? '<span class="checkmark">✓</span>'
                   : '<span class="crossmark">✗</span>'}
@@ -1083,6 +1263,10 @@ function generateExtintoresSection(data) {
     </div>
   `;
 }
+
+
+
+
 
 
 
