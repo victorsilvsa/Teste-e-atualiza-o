@@ -974,17 +974,19 @@ function generateAlarmeSection(data) {
       `;
 }
 
-function generateExtintoresSection(data) {
+// ========================================
+// FUNÇÃO AUXILIAR - COLETAR TODOS OS EXTINTORES
+// ========================================
+function getAllExtintores(data) {
   const extintores = [];
 
-  // 🔎 Detecta extintores com índice (extintores_tipo_0, 1, 2...)
   Object.keys(data).forEach(key => {
     const match = key.match(/^extintores_tipo_(\d+)$/);
     if (!match) return;
 
     const i = match[1];
-
     extintores.push({
+      index: parseInt(i),
       tipo: data[`extintores_tipo_${i}`],
       quantidade: data[`extintores_quantidade_${i}`] ?? data.extintores_quantidade,
       peso: data[`extintores_peso_${i}`] ?? data.extintores_peso,
@@ -995,9 +997,11 @@ function generateExtintoresSection(data) {
     });
   });
 
-  // 🧯 Caso antigo: apenas um extintor sem índice
+  extintores.sort((a, b) => a.index - b.index);
+
   if (extintores.length === 0 && data.extintores_tipo) {
     extintores.push({
+      index: 0,
       tipo: data.extintores_tipo,
       quantidade: data.extintores_quantidade,
       peso: data.extintores_peso,
@@ -1008,6 +1012,64 @@ function generateExtintoresSection(data) {
     });
   }
 
+  return extintores;
+}
+
+// ========================================
+// GERA CARD DE 1 EXTINTOR (MOBILE)
+// ========================================
+function generateExtintorCard(ext, numeroGlobal) {
+  return `
+    <div class="pdf-section">
+      <div class="pdf-section-title">
+        <i class="fas fa-fire-extinguisher"></i> Extintor ${numeroGlobal} — ${ext.tipo || '-'}
+      </div>
+
+      <div class="pdf-field">
+        <div class="pdf-field-label">Quantidade:</div>
+        <div class="pdf-field-value">${ext.quantidade || '-'}</div>
+      </div>
+
+      <div class="pdf-field">
+        <div class="pdf-field-label">Peso:</div>
+        <div class="pdf-field-value">${ext.peso || '-'}</div>
+      </div>
+
+      <div class="pdf-field">
+        <div class="pdf-field-label">Validade:</div>
+        <div class="pdf-field-value">
+          ${ext.validade ? new Date(ext.validade).toLocaleDateString('pt-BR') : '-'}
+        </div>
+      </div>
+
+      <div class="pdf-field">
+        <div class="pdf-field-label">Lacres Intactos:</div>
+        <div class="pdf-field-value">
+          ${ext.lacres === 'Sim' ? '<span class="checkmark">✓</span>' : '<span class="crossmark">✗</span>'}
+        </div>
+      </div>
+
+      <div class="pdf-field">
+        <div class="pdf-field-label">Manômetro OK:</div>
+        <div class="pdf-field-value">
+          ${ext.manometro === 'Sim' ? '<span class="checkmark">✓</span>' : '<span class="crossmark">✗</span>'}
+        </div>
+      </div>
+
+      <div class="pdf-field">
+        <div class="pdf-field-label">Fixação Adequada:</div>
+        <div class="pdf-field-value">
+          ${ext.fixacao === 'Sim' ? '<span class="checkmark">✓</span>' : '<span class="crossmark">✗</span>'}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ========================================
+// GERA GRID DE ATÉ 2 EXTINTORES (DESKTOP)
+// ========================================
+function generateExtintoresGrid(extintores, startIndex) {
   if (extintores.length === 0) {
     return `
       <div class="pdf-section">
@@ -1026,10 +1088,10 @@ function generateExtintoresSection(data) {
       </div>
 
       <div class="pdf-extintores-grid">
-        ${extintores.map((ext, index) => `
+        ${extintores.map((ext, idx) => `
           <div class="pdf-extintor-card">
             <div class="pdf-extintor-title">
-              Extintor ${index + 1} — ${ext.tipo || '-'}
+              Extintor ${startIndex + idx + 1} — ${ext.tipo || '-'}
             </div>
 
             <div class="pdf-field">
@@ -1045,36 +1107,28 @@ function generateExtintoresSection(data) {
             <div class="pdf-field">
               <div class="pdf-field-label">Validade:</div>
               <div class="pdf-field-value">
-                ${ext.validade
-                  ? new Date(ext.validade).toLocaleDateString('pt-BR')
-                  : '-'}
+                ${ext.validade ? new Date(ext.validade).toLocaleDateString('pt-BR') : '-'}
               </div>
             </div>
 
             <div class="pdf-field">
               <div class="pdf-field-label">Lacres Intactos:</div>
               <div class="pdf-field-value">
-                ${ext.lacres === 'Sim'
-                  ? '<span class="checkmark">✓</span>'
-                  : '<span class="crossmark">✗</span>'}
+                ${ext.lacres === 'Sim' ? '<span class="checkmark">✓</span>' : '<span class="crossmark">✗</span>'}
               </div>
             </div>
 
             <div class="pdf-field">
               <div class="pdf-field-label">Manômetro OK:</div>
               <div class="pdf-field-value">
-                ${ext.manometro === 'Sim'
-                  ? '<span class="checkmark">✓</span>'
-                  : '<span class="crossmark">✗</span>'}
+                ${ext.manometro === 'Sim' ? '<span class="checkmark">✓</span>' : '<span class="crossmark">✗</span>'}
               </div>
             </div>
 
             <div class="pdf-field">
               <div class="pdf-field-label">Fixação Adequada:</div>
               <div class="pdf-field-value">
-                ${ext.fixacao === 'Sim'
-                  ? '<span class="checkmark">✓</span>'
-                  : '<span class="crossmark">✗</span>'}
+                ${ext.fixacao === 'Sim' ? '<span class="checkmark">✓</span>' : '<span class="crossmark">✗</span>'}
               </div>
             </div>
           </div>
@@ -1083,6 +1137,78 @@ function generateExtintoresSection(data) {
     </div>
   `;
 }
+
+// ========================================
+// MANTÉM COMPATIBILIDADE COM CÓDIGO ANTIGO
+// ========================================
+function generateExtintoresSection(data) {
+  const extintores = getAllExtintores(data);
+
+  if (extintores.length === 0) {
+    return `
+      <div class="pdf-section">
+        <div class="pdf-section-title">
+          <i class="fas fa-fire-extinguisher"></i> Extintores de Incêndio
+        </div>
+        <div class="pdf-field-value">Nenhum extintor informado</div>
+      </div>
+    `;
+  }
+
+  return generateExtintoresGrid(extintores, 0);
+}
+
+
+function generateExtintoresPDF(data) {
+  const isMobile = window.innerWidth <= 768;
+  const todosExtintores = getAllExtintores(data);
+  let html = '';
+
+  if (isMobile) {
+    // MOBILE: 1 extintor por página
+    todosExtintores.forEach((ext, index) => {
+      html += `<div class="pdf-page">`;
+      html += generatePDFHeader('RELATÓRIO DE INSPEÇÃO - EXTINTORES');
+      if (index === 0) {
+        html += generateClientSection(data);
+      }
+      html += generateExtintorCard(ext, index + 1);
+      if (index === todosExtintores.length - 1) {
+        html += generateSignaturesSection(data);
+      }
+      html += generatePDFFooter();
+      html += `</div>`;
+    });
+  } else {
+    // DESKTOP: 2 extintores por página
+    const extintoresPorPagina = 2;
+    const totalPaginas = Math.ceil(todosExtintores.length / extintoresPorPagina);
+
+    for (let p = 0; p < totalPaginas; p++) {
+      const start = p * extintoresPorPagina;
+      const extintoresDessaPagina = todosExtintores.slice(start, start + extintoresPorPagina);
+
+      html += `<div class="pdf-page">`;
+      html += generatePDFHeader('RELATÓRIO DE INSPEÇÃO - EXTINTORES');
+      
+      if (p === 0) {
+        html += generateClientSection(data);
+      }
+
+      html += generateExtintoresGrid(extintoresDessaPagina, start);
+
+      if (p === totalPaginas - 1) {
+        html += generateSignaturesSection(data);
+      }
+
+      html += generatePDFFooter();
+      html += `</div>`;
+    }
+  }
+
+  return html;
+}
+
 
 
 
